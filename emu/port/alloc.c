@@ -219,7 +219,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	t = p->head;
 	q = nil;
 	while(t) {
-		if(t->size <= size) {
+		if(t->size >= size) {
 			pooldel(p, t);
 			t->magic = MAGIC_A;
 			frag = t->size - size;
