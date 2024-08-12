@@ -66,5 +66,6 @@ extern	void*	poolrealloc(Pool*, void*, ulong);
 extern	int	poolsetsize(char*, int);
 extern	void	poolsetcompact(Pool*, void (*)(void*, void*));
 extern	char*	poolaudit(char*(*)(int, Bhdr *));
+extern void 	poolliststat(Pool*);
 
 extern	void	(*poolmonitor)(int, ulong, Bhdr*, ulong);

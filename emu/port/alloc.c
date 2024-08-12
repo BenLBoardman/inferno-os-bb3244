@@ -178,6 +178,7 @@ pooladd(Pool *p, Bhdr *q)
 	t = p->head;
 	if(t == nil) {
 		p->head = q;
+		poolliststat(mainmem);
 		return;
 	}
 
@@ -185,20 +186,24 @@ pooladd(Pool *p, Bhdr *q)
 
 	tp = nil;
 	while(t != nil) {
-		if(size >= t->size) {
-			q->prev = t;
-			q->fwd = t->fwd;
-			if(t->fwd != nil)
-				t->fwd->prev = q;
-			t->fwd = q;
-			return;
+		if(size >= t->size) { //more shenanigans needed here
+			tp = t->fwd;
+			break;
 		}
 		tp = t;
 		t = t->fwd;
 	}
 
-	q->prev = tp;
-	tp->fwd = q;
+	q->fwd = tp;
+	q->prev = tp->prev;
+
+	if(p->head != tp)
+		tp->prev->fwd = q;
+	else
+		p->head = q;
+
+	tp->prev = q;
+	poolliststat(mainmem);
 }
 
 static void*
@@ -932,4 +937,26 @@ poolaudit(char*(*audit)(int, Bhdr *))
 		unlock(&p->l);
 	}
 	return r;
+}
+
+
+void
+poolliststat(Pool *p) {
+	Bhdr *t;
+	
+	print("POOL FREE BLOCK SIZES FOR %s: ", p->name);
+	t = p->head;
+
+	while(1) {
+		print(" %d", t->size);
+
+		t = t->fwd;
+		if(t != nil) {
+			print(",");
+		}
+		else {
+			print("\n");
+			return;
+		}
+	}
 }
