@@ -261,6 +261,7 @@ main(int argc, char *argv[])
 
 	if(vflag)
 		print("Inferno %s main (pid=%d) %s\n", VERSION, getpid(), opt);
+	print("Hello world, from CS370\n");
 
 	libinit(imod);
 }
