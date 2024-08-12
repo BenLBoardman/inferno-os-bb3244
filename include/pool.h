@@ -21,10 +21,7 @@ struct Bhdr
 	union {
 		uchar data[1];
 		struct {
-			Bhdr*	bhl;
-			Bhdr*	bhr;
 			Bhdr*	bhp;
-			Bhdr*	bhv;
 			Bhdr*	bhf;
 		} s;
 #define clink	u.l.link
