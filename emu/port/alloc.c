@@ -167,7 +167,7 @@ void
 pooladd(Pool *p, Bhdr *q)
 {
 	int size;
-	Bhdr *tp, *t;
+	Bhdr *tp, *tf, *t;
 
 	q->magic = MAGIC_F;
 
@@ -178,32 +178,33 @@ pooladd(Pool *p, Bhdr *q)
 	t = p->head;
 	if(t == nil) {
 		p->head = q;
-		poolliststat(mainmem);
 		return;
 	}
 
 	size = q->size;
-
-	tp = nil;
+	if(size < t->size) {
+		p->head = q;
+		q->fwd = t;
+		t->prev = q;
+		return;
+	}
+	
+	tp = t;
+	t = t->fwd;
 	while(t != nil) {
-		if(size >= t->size) { //more shenanigans needed here
-			tp = t->fwd;
+		if(size >= tp->size && size <= t->size)
 			break;
-		}
 		tp = t;
 		t = t->fwd;
 	}
 
-	q->fwd = tp;
-	q->prev = tp->prev;
 
-	if(p->head != tp)
-		tp->prev->fwd = q;
-	else
-		p->head = q;
+	q->prev = tp;
+	q->fwd = t;
+	if(t != nil)
+		t->prev = q;
+	tp->fwd = q;
 
-	tp->prev = q;
-	poolliststat(mainmem);
 }
 
 static void*
