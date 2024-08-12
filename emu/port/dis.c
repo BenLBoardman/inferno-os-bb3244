@@ -6,6 +6,10 @@
 #include	"error.h"
 #include	"raise.h"
 
+
+
+
+
 struct
 {
 	Lock	l;
@@ -118,6 +122,7 @@ newprog(Prog *p, Modlink *m)
 	Prog *n, **ph;
 	Osenv *on, *op;
 	static int pidnum;
+	int firstpid, firstcheck;
 
 	if(p != nil){
 		if(p->group != nil)
@@ -135,9 +140,26 @@ newprog(Prog *p, Modlink *m)
 			error(exNomem);
 	}
 
-	n->pid = ++pidnum;
-	if(n->pid <= 0)
-		panic("no pids");
+
+	firstpid = pidnum;
+	firstcheck = 1;
+	do {
+		if(firstpid == pidnum && !firstcheck) //if all pids are in use
+			panic("no pids");
+
+		firstcheck = 0;
+		n->pid = ++pidnum;
+		ph = pidlook(n->pid);
+		
+		if(pidnum < 0) //looped through all PIDs, start looking at the start again
+			pidnum = 0;
+	
+
+	} while (*ph != nil);
+
+	n->pidlink = nil;
+	*ph = n;
+			
 	n->group = nil;
 
 	if(isched.tail != nil) {
@@ -150,11 +172,6 @@ newprog(Prog *p, Modlink *m)
 	}
 	isched.tail = n;
 
-	ph = pidlook(n->pid);
-	if(*ph != nil)
-		panic("dup pid");
-	n->pidlink = nil;
-	*ph = n;
 
 	n->osenv = (Osenv*)((uchar*)n + sizeof(Prog));
 	n->xec = xec;
@@ -1080,6 +1097,92 @@ vmachine(void *a)
 	}
 }
 
+int
+leap(int year) {
+	return year % 4 == 0 && year % 100 != 0;
+}
+
+char *
+getmonth(int *day, int leap) {
+	if(*day > 31) //jan
+		*day -= 31;
+	else
+		return "January";
+	if(*day > (28+leap)) //feb
+		*day -= (28+leap);
+	else 
+		return "February";
+	
+	if(*day > 31) //march
+		*day -= 31;
+	else 
+		return "March";
+	if(*day > 30) //april
+		*day -= 30;
+	else 
+		return "April";
+	
+	if(*day > 31) //may
+		*day -= 31;
+	else 
+		return "May";
+	if(*day > 30) //june
+		*day -= 30;
+	else 
+		return "June";
+	if(*day > 31) //july
+		*day -= 31;
+	else
+		return "July";
+	if(*day > 31) //aug
+		*day -= 31;
+	else
+		return "August";
+	if(*day > 30) //sept
+		*day -= 30;
+	else
+		return "September";
+	if(*day > 31) //oct
+		*day -= 31;
+	else
+		return "October";
+	if(*day > 30) //nov
+		*day -= 30;
+	else
+		return "November";
+	
+
+	return "December";
+
+} 
+
+void
+printdatetime() {
+	int time, yearlen, daylen, year, day, hour, minute, second;
+	char *month;
+
+	time = kerndate; //test time for now
+	second = time % 60;
+	minute = (time / 60) % 60;
+	hour = (time / 3600) % 24;
+
+	daylen = 86400;
+	day = (time / daylen) + 1;
+	yearlen = 366;
+	year = 1970;
+	while(day > yearlen) {
+		day -= yearlen;
+		year++;
+		yearlen = leap(year) ? 366 : 365;
+	} 
+
+	month = strdup(getmonth(&day, leap(year)));
+
+
+	print("Compiled on %s %02d, %04d at %02d:%02d:%02d UTC\n", month, day, year, hour, minute, second); //Assn 1 stub
+
+}
+
 void
 disinit(void *a)
 {
@@ -1093,6 +1196,9 @@ disinit(void *a)
 
 	if(vflag)
 		print("Initial Dis: \"%s\"\n", initmod);
+	print("Host owner: %s\n", eve);
+
+	printdatetime();
 
 	fmtinstall('D', Dconv);
 
