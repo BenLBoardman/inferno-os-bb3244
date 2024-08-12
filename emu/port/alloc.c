@@ -188,7 +188,8 @@ pooladd(Pool *p, Bhdr *q)
 		if(size >= t->size) {
 			q->prev = t;
 			q->fwd = t->fwd;
-			t->fwd->prev = q;
+			if(t->fwd != nil)
+				t->fwd->prev = q;
 			t->fwd = q;
 			return;
 		}
