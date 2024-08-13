@@ -1158,6 +1158,7 @@ getmonth(int *day, int leap) {
 
 void
 printdatetime() {
+	char *junk;
 	int time, yearlen, daylen, year, day, hour, minute, second;
 	char *month;
 
@@ -1178,9 +1179,7 @@ printdatetime() {
 
 	month = strdup(getmonth(&day, leap(year)));
 
-
-	print("Compiled on %s %02d, %04d at %02d:%02d:%02d UTC\n", month, day, year, hour, minute, second); //Assn 1 stub
-
+	print("Compiled on %s %02d, %04d at %02d:%02d:%02d UTC\n", month, day, year, hour, minute, second);
 }
 
 void

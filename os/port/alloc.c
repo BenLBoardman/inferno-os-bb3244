@@ -25,7 +25,7 @@ struct Pool
 	ulong	arenasize;
 	ulong	hw;
 	Lock	l;
-	Bhdr*	root;
+	Bhdr*	head;
 	Bhdr*	chain;
 	ulong	nalloc;
 	ulong	nfree;
@@ -120,7 +120,7 @@ pooldel(Pool *p, Bhdr *t)
 {
 	Bhdr *s, *f, *rp, *q;
 
-	if(t->parent == nil && p->root != t) {
+	if(t->parent == nil && p->head != t) {
 		t->prev->fwd = t->fwd;
 		t->fwd->prev = t->prev;
 		return;
@@ -131,7 +131,7 @@ pooldel(Pool *p, Bhdr *t)
 		s = t->parent;
 		f->parent = s;
 		if(s == nil)
-			p->root = f;
+			p->head = f;
 		else {
 			if(s->left == t)
 				s->left = f;
@@ -184,7 +184,7 @@ pooldel(Pool *p, Bhdr *t)
 	}
 	q = t->parent;
 	if(q == nil)
-		p->root = rp;
+		p->head = rp;
 	else {
 		if(t == q->left)
 			q->left = rp;
@@ -209,9 +209,9 @@ pooladd(Pool *p, Bhdr *q)
 	q->fwd = q;
 	q->prev = q;
 
-	t = p->root;
+	t = p->head;
 	if(t == nil) {
-		p->root = q;
+		p->head = q;
 		return;
 	}
 
@@ -274,7 +274,7 @@ poolalloc(Pool *p, ulong asize)
 	ilock(&p->l);
 	p->nalloc++;
 
-	t = p->root;
+	t = p->head;
 	q = nil;
 	while(t) {
 		if(t->size == size) {
@@ -495,7 +495,7 @@ poolmax(Pool *p)
 
 	ilock(&p->l);
 	size = p->maxsize - p->cursize;
-	t = p->root;
+	t = p->head;
 	if(t != nil) {
 		while(t->right != nil)
 			t = t->right;
@@ -712,8 +712,8 @@ poolshow(void)
 	int i;
 
 	for(i = 0; i < table.n; i++) {
-		print("Arena: %s root=%.8lux\n", table.pool[i].name, table.pool[i].root);
-		pooldump(table.pool[i].root, 0, 'R');
+		print("Arena: %s root=%.8lux\n", table.pool[i].name, table.pool[i].head);
+		pooldump(table.pool[i].head, 0, 'R');
 	}
 }
 
@@ -739,7 +739,7 @@ poolcompact(Pool *pool)
 	limit = B2LIMIT(base);
 	compacted = 0;
 
-	pool->root = nil;
+	pool->head = nil;
 	end = ptr;
 	while(base != nil) {
 		next = B2NB(ptr);
