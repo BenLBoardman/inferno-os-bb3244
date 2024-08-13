@@ -153,14 +153,13 @@ poolchain(Pool *p)
 void
 pooldel(Pool *p, Bhdr *t)
 {
-	if(p->head = t)
+	if(p->head == t)
 		p->head = t->fwd;
 	else 
 		t->prev->fwd = t->fwd;
 
 	if(t->fwd != nil)
 		t->fwd->prev = t->prev;	
-
 }
 
 void
@@ -204,7 +203,6 @@ pooladd(Pool *p, Bhdr *q)
 	if(t != nil)
 		t->prev = q;
 	tp->fwd = q;
-
 }
 
 static void*
@@ -372,7 +370,7 @@ poolfree(Pool *p, void *v)
 	lock(&p->l);
 	p->nfree++;
 	p->cursize -= b->size;
-	/*c = B2NB(b); DISABLE COALESCING
+	c = B2NB(b); //DISABLE COALESCING
 	if(c->magic == MAGIC_F) {	// Join forward 
 		if(c == ptr)
 			ptr = b;
@@ -391,7 +389,7 @@ poolfree(Pool *p, void *v)
 		c->size += b->size;
 		b = c;
 		B2T(b)->hdr = b;
-	}*/
+	}
 	pooladd(p, b);
 	unlock(&p->l);
 }
@@ -945,10 +943,10 @@ void
 poolliststat(Pool *p) {
 	Bhdr *t;
 	
-	print("POOL FREE BLOCK SIZES FOR %s: ", p->name);
+	print("POOL FREE BLOCK SIZES FOR %s:", p->name);
 	t = p->head;
 
-	while(1) {
+	while(t != nil) {
 		print(" %d", t->size);
 
 		t = t->fwd;
