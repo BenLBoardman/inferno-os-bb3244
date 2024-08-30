@@ -309,6 +309,7 @@ emuinit(void *imod)
 	kbind("#p", "/prog", MREPL);
 	kbind("#d", "/fd", MREPL);
 	kbind("#I", "/net", MAFTER);	/* will fail on Plan 9 */
+	kbind("#n", "/dev", MAFTER); /*COUNT SERVER FOR ASSN 4*/
 
 	/* BUG: we actually only need to do these on Plan 9 */
 	kbind("#U/dev", "/dev", MAFTER);
