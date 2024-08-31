@@ -14,8 +14,11 @@ enum {
 Dirtab counttab[] =
 {
 	".",		{Qdir, 0, QTDIR},	0,	0555,
-	"data",	{Qdata},	0,	0666,
+	"cdata",	{Qdata},	0,	0666,
 };
+
+void	*cntdata;
+int		cntsize;
 
 static Chan *
 countattach(char *spec)
@@ -48,15 +51,21 @@ countclose(Chan *c)
 }
 
 static long
-countread(Chan *c, void *va, long count, vlong offset)
+countread(Chan *c, void *va, long n, vlong offset)
 {
 	static long counter = 0;
-	USED(offset);
+	uchar *data;
+	uint len = 0;
 
 	if(c->qid.type & QTDIR)
-		return devdirread(c, va, count, counttab, nelem(counttab), devgen);
+		return devdirread(c, va, n, counttab, nelem(counttab), devgen);
+	if(offset < 0 || offset >= cntsize)
+		return 0;
+	if(offset+n > cntsize)
+		n = len - offset;
 
-
+	
+	memmove(va, cntdata+offset, n);
 	counter++;
 	return counter;
 }
