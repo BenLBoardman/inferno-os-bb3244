@@ -105,7 +105,7 @@ Dev countdevtab = {
 };
 
 
-//itoa copied from "lib/lego/styx.c"
+//itoa copied from "lib/lego/styx.c" to avoid including unnecessary functionality
 int
 itoa(char *buf, int value)
 {
