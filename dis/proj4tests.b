@@ -34,7 +34,7 @@ read5test(): int
 
     sys->print("File opened successfully\n");
 
-    for(i := 0; i < 6; i++) 
+    for(i := 0; i < 5; i++) 
     {
         n = sys->read(rfd, buf, len buf);
         sys->seek(rfd, big 0, sys->SEEKSTART);
