@@ -14,11 +14,12 @@ enum {
 Dirtab counttab[] =
 {
 	".",		{Qdir, 0, QTDIR},	0,	0555,
-	"cdata",	{Qdata},	0,	0666,
+	"count",	{Qdata},	0,	0666,
 };
 
-void	*cntdata;
-int		cntsize;
+int itoa(char*, int);
+
+uint counter = 0;
 
 static Chan *
 countattach(char *spec)
@@ -51,33 +52,37 @@ countclose(Chan *c)
 }
 
 static long
-countread(Chan *c, void *va, long n, vlong offset)
+countread(Chan *c, void *buf, long numbytes, vlong offset)
 {
-	static long counter = 0;
-	uchar *data;
-	uint len = 0;
+	int len;
+	USED(c);
+	USED(numbytes);
 
-	if(c->qid.type & QTDIR)
-		return devdirread(c, va, n, counttab, nelem(counttab), devgen);
-	if(offset < 0 || offset >= cntsize)
-		return 0;
-	if(offset+n > cntsize)
-		n = len - offset;
+	if(c->qid.type & QTDIR) {
+			return devdirread(c, buf, numbytes, counttab, nelem(counttab), devgen);
+	}
+	if(offset == 0) {
+		memset(buf, 0, numbytes);
+		counter++;
+		len = itoa(buf, counter);
 
+		return len;
+	}
+
+	return 0;
 	
-	memmove(va, cntdata+offset, n);
-	counter++;
-	return counter;
 }
 
 static long
-countwrite(Chan *c, void *va, long count, vlong offset)
+countwrite(Chan *c, void *buf, long numbytes, vlong offset)
 {
 	USED(c);
-	USED(va);
+	USED(numbytes);
 	USED(offset);
 
-	return count;
+	counter = atoi((char *) buf);
+
+	return counter;
 }
 
 Dev countdevtab = {
@@ -98,3 +103,29 @@ Dev countdevtab = {
 	devremove,
 	devwstat,
 };
+
+
+//itoa copied from "lib/lego/styx.c"
+int
+itoa(char *buf, int value)
+{
+	char *bp = buf;
+	int divisor;
+	if (value < 0) {
+		*bp++ = '-';
+		value = -value;
+	}
+	if (value == 0)
+		*bp++ = '0';
+	else {
+		divisor = 10000;
+		while (divisor > value)
+			divisor /= 10;
+		while (divisor) {
+			*bp++ = '0' + value / divisor;
+			value %= divisor;
+			divisor /= 10;
+		}
+	}
+	return bp - buf;
+}

@@ -4,6 +4,7 @@
         "dat.h": "c",
         "fns.h": "c",
         "isa.h": "c",
-        "kernel.h": "c"
+        "kernel.h": "c",
+        "cstdlib": "c"
     }
 }
