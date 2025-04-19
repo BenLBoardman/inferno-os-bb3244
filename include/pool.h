@@ -21,10 +21,7 @@ struct Bhdr
 	union {
 		uchar data[1];
 		struct {
-			Bhdr*	bhl;
-			Bhdr*	bhr;
 			Bhdr*	bhp;
-			Bhdr*	bhv;
 			Bhdr*	bhf;
 		} s;
 #define clink	u.l.link
@@ -69,5 +66,6 @@ extern	void*	poolrealloc(Pool*, void*, ulong);
 extern	int	poolsetsize(char*, int);
 extern	void	poolsetcompact(Pool*, void (*)(void*, void*));
 extern	char*	poolaudit(char*(*)(int, Bhdr *));
+extern void 	poolliststat(Pool*);
 
 extern	void	(*poolmonitor)(int, ulong, Bhdr*, ulong);
